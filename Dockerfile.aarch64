@@ -1,37 +1,26 @@
-FROM arm64v8/node:14-buster AS build_frontend
+FROM node:16-buster AS build_frontend
 
 WORKDIR /app
 
-# RUN apt install git python2
-
-COPY package.json .
-
-RUN ls -l /usr/local/bin/npm
-RUN npm --version
-RUN npm install
-
 COPY . .
 
-RUN NODE_ENV=production npm run build && \
-    rm dist/data/public/index.html.br
+RUN make build_frontend
+
+# RUN NODE_ENV=production npm run build && \
+#     rm dist/data/public/index.html.br
 
 
 FROM arm64v8/golang:1.16-buster AS build_backend
 
 WORKDIR /app
 
-ENV CGO_LDFLAGS_ALLOW "-fopenmp"
-ENV GO111MODULE "on"
-
 RUN apt-get update && \
     apt-get install -y libglib2.0-dev curl
 
 COPY . .
 
-RUN find server/plugin/plg_* -type f -name "install.sh" -exec {} \; && \
-    go generate -x ./server/...
-
-RUN PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/ CGO_CFLAGS_ALLOW='-fopenmp' go build -mod=vendor --tags "fts5" -ldflags "-X github.com/mickael-kerjean/filestash/server/common.BUILD_DATE=`date -u +%Y%m%d` -X github.com/mickael-kerjean/filestash/server/common.BUILD_REF=`git rev-parse HEAD`" -o filestash server/main.go
+RUN make build_init
+RUN make build_backend
 
 FROM arm64v8/debian:stable-slim
 
