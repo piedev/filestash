@@ -1,8 +1,8 @@
-FROM arm64v8/node:16-buster AS build_frontend
+FROM node:16-buster AS build_frontend
 
 WORKDIR /app
 
-RUN apt install git python2
+# RUN apt install git python2
 
 COPY package.json .
 
@@ -16,7 +16,7 @@ RUN NODE_ENV=production npm run build && \
     rm dist/data/public/index.html.br
 
 
-FROM arm64v8/golang:1.16-buster AS build_backend
+FROM golang:1.16-buster AS build_backend
 
 WORKDIR /app
 
