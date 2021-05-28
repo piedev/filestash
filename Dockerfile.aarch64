@@ -1,4 +1,4 @@
-FROM node:14-buster AS build_frontend
+FROM arm64v8/node:14-buster AS build_frontend
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN NODE_ENV=production npm run build && \
     rm dist/data/public/index.html.br
 
 
-FROM golang:1.16-buster AS build_backend
+FROM arm64v8/golang:1.16-buster AS build_backend
 
 WORKDIR /app
 
